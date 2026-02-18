@@ -43,12 +43,12 @@ Based on the requirements and architecture assumptions, the following quality at
 - Extensibility - solution should be developed with the ease of extensibility in mind. Both for the enhancements of the initial analysis pipeline and for 3rd-party services and APIs integrations. As requirements will be changing along with the product adoption.
 - Maintainability - When 3rd-party provides changes to their API or raises prices, updating or swapping providers shouldn't require refactoring half the system.
 - Auditability - Flagged content may be disputed. The system must preserve evidence (scores, timestamps, source artifacts) to justify why a decision was made.
-- Fault-tolerance -** **3rd-party API failures are possible. The system must return partial results and clearly indicate what failed rather than blocking entire campaign analysis.
+- Fault-tolerance - 3rd-party API failures are possible. The system must return partial results and clearly indicate what failed rather than blocking entire campaign analysis.
 
 
 ## 1.3 Technical Decisions Rationale
 ### High-level description of the system architecture
-The system follows a serverless orchestration pattern** **built on AWS.
+The system follows a serverless orchestration pattern built on AWS.
 
 The architecture separates concerns between API handling (API Gateway, Flask), AI pipeline workflow orchestration (Step Functions), and AI pipeline task execution (Lambda).
 
@@ -71,6 +71,7 @@ This approach provides the minimum time to market for the initial setup and depl
 | AI Pipeline (transcription) | AssemblyAI (3P) | Audio-to-text transformation with timestamps |
 | AI Pipeline (visual) | Sightengine (3P) | Safety scoring of the visual content |
 | AI Pipeline (NLP) | Claude AI (3P) | Result summarization and NLP |
+
 **Flask API Backend**
 
  The core application is built with Flask and serves as the central API layer. Flask was chosen over a pure FaaS or BaaS solution for several reasons:
@@ -79,6 +80,7 @@ This approach provides the minimum time to market for the initial setup and depl
 - Unlimited and low-effort customization possibilities for the future user-facing web application
 - Acts as the integration point between frontend requests and Step Functions execution
 - Simplifies future migration path when Lambda-based pipeline stages need to be replaced with containerized microservices. The Flask app remains the stable API interface
+
 **AWS API Gateway**
 
  API Gateway is an important element of any modern solution. It's placed in front of the Flask backend to provide:
@@ -87,6 +89,7 @@ This approach provides the minimum time to market for the initial setup and depl
 - API key management for partner access
 - Request/response logging for debugging
 - SSL termination and DDoS protection
+
 **AWS Step Functions**
 
  Step Functions orchestrate the AI pipeline execution. Each campaign analysis triggers a state machine that:
@@ -95,6 +98,7 @@ This approach provides the minimum time to market for the initial setup and depl
 - Handles parallel processing of multiple content items
 - Manages retries and error states without custom code
 - Provides visual debugging and execution history
+
 **AWS Lambda Functions**
 
  Individual pipeline stages run as Lambda functions:
@@ -104,6 +108,7 @@ This approach provides the minimum time to market for the initial setup and depl
 - stt - sends audio to AssemblyAI for transcription
 - visual_analysis - sends frames to Sightengine for safety scoring
 - ai_summary - generates human-readable report via Anthropic API
+
 **Data Storage Solutions**
 
 - **Amazon RDS (PostgreSQL)** - stores campaign metadata, analysis results, and audit records
@@ -132,7 +137,7 @@ The API validates the request, creates a campaign record in the database, and tr
   }
 }
 ```
-**Response: **200 OK
+**Response:** 200 OK
 
 ```
 {
@@ -142,14 +147,14 @@ The API validates the request, creates a campaign record in the database, and tr
   "created_at": "string (ISO 8601)"
 }
 ```
-**Errors: **400 Bad Request
+**Errors:**400 Bad Request
 
 ---
 
 ### GET /campaigns/{campaign_id}/status
 Returns current processing progress. The frontend polls this endpoint to display real-time status updates. Progress data is read from Redis for fast response times. Percent indicates overall completion (0-100) calculated from the initial item count returned by the scraper.
 
-**Response: **200 OK
+**Response:** 200 OK
 
 ```
 {
@@ -162,14 +167,14 @@ Returns current processing progress. The frontend polls this endpoint to display
   "updated_at": "string (ISO 8601)"
 }
 ```
-**Errors: **404 Not Found
+**Errors:**404 Not Found
 
 ---
 
 ### GET /campaigns/{campaign_id}/results
 Returns complete analysis results. This endpoint reads from PostgreSQL and returns the full analysis payload, including aggregated scores, per-item breakdowns, AI-generated summary, and any failures.
 
-**Response: **200 OK
+**Response:** 200 OK
 
 ```
 {
@@ -218,14 +223,14 @@ Returns complete analysis results. This endpoint reads from PostgreSQL and retur
   ]
 }
 ```
-**Errors: **404 Not Found, 409 Conflict (if processing in progress)
+**Errors:**404 Not Found, 409 Conflict (if processing in progress)
 
 
 
 ### GET /campaigns/{campaign_id}/items/{item_id}
 Returns detailed analysis for a single content item. Use this endpoint to get information about specific items that have warnings. Includes full flag details with timestamps and evidence links for audit purposes.
 
-**Response: **200 OK
+**Response:** 200 OK
 
 ```
 {
@@ -250,7 +255,7 @@ Returns detailed analysis for a single content item. Use this endpoint to get in
   "analyzed_at": "string (ISO 8601)"
 }
 ```
-**Errors: **404 Not Found
+**Errors:**404 Not Found
 
 ---
 
@@ -592,11 +597,10 @@ For even more detailed information on content items, each item's flags can be fe
   "analyzed_at": "string"
 }
 ```
----
 
 # 3. Implementation Reference
-## 
----
+
+https://github.com/GlugovGrGlib/scrp_solution
 
 # 4. Optimization Notes
 ## **4.1 How to reduce latency**
