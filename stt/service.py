@@ -106,7 +106,10 @@ class TranscriptionService:
             for w in (transcript.words or [])
         )
 
-        transcript_sentences = transcript.get_sentences() if hasattr(transcript, "get_sentences") else []
+        if hasattr(transcript, "get_sentences"):
+            transcript_sentences = transcript.get_sentences()
+        else:
+            transcript_sentences = []
         sentences = tuple(
             Sentence(
                 text=s.text,

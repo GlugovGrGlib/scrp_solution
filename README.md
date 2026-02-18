@@ -5,14 +5,13 @@
 [![Tests](https://github.com/GlugovGrGlib/scrp_solution/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=test)](https://github.com/GlugovGrGlib/scrp_solution/actions/workflows/ci.yml)
 
 Social media content analysis system.
+This module is part of a larger social media content analysis pipeline. See [Solution Design](docs/0001_Social_Media_Scraper_Solution_Design.md) for full documentation, or view the [interactive diagram on Eraser](https://app.eraser.io/workspace/N6NkfzhR77JTLJ53atft?origin=share).
 
 ## Architecture
 
 ![System Architecture](docs/solution-diagram-export-white.png)
 
-This module is part of a larger social media content analysis pipeline. See [Solution Design](docs/0001_Social_Media_Scraper_Solution_Design.md) for full documentation, or view the [interactive diagram on Eraser](https://app.eraser.io/workspace/N6NkfzhR77JTLJ53atft?origin=share).
-
-## Project
+## Project scope
 
 Audio transcription service using [AssemblyAI](https://www.assemblyai.com/) for the STT step of the AI Pipeline.
 
