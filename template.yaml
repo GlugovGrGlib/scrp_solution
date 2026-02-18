@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: STT Lambda using AssemblyAI
+
+Parameters:
+  Environment:
+    Type: String
+    Default: development
+    AllowedValues:
+      - development
+      - production
+
+Globals:
+  Function:
+    Timeout: 300
+    MemorySize: 256
+
+Resources:
+  STTFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      PackageType: Image
+      ImageUri: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/stt:latest
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          ENV_FOR_DYNACONF: !Ref Environment
+          APP_STT_ASSEMBLYAI_API_KEY: '{{resolve:secretsmanager:stt/assemblyai:SecretString:api_key}}'
+          APP_REDIS_URL: !Sub '{{resolve:ssm:/stt/${Environment}/redis_url}}'
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:stt/assemblyai-*
+        - SSMParameterReadPolicy:
+            ParameterName: !Sub stt/${Environment}/*
+
+Outputs:
+  STTFunctionArn:
+    Description: STT Lambda ARN
+    Value: !GetAtt STTFunction.Arn

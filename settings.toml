@@ -1,0 +1,29 @@
+[default]
+# Database
+database_url = "postgresql://scraper:scraper@localhost:5432/scraper"
+
+# Redis
+redis_url = "redis://localhost:6379/0"
+cache_ttl_seconds = 3600
+rate_limit_window_seconds = 1
+
+# STT
+stt_rate_limit_requests = 5
+stt_speaker_labels = false
+stt_punctuate = true
+stt_format_text = true
+
+# Service invocation
+invoke_mode = "direct"  # "direct", "http", or "step"
+stt_service_url = "http://localhost:5001"
+stt_state_machine_arn = ""
+
+[development]
+invoke_mode = "http"
+stt_service_url = "http://stt:5001"
+
+[production]
+cache_ttl_seconds = 7200
+stt_rate_limit_requests = 10
+invoke_mode = "step"
+stt_state_machine_arn = "arn:aws:states:REGION:ACCOUNT:stateMachine:stt-pipeline"

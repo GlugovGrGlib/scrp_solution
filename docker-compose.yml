@@ -1,0 +1,76 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: scraper
+      POSTGRES_USER: scraper
+      POSTGRES_PASSWORD: scraper
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scraper"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .secrets.toml
+    environment:
+      - APP_DATABASE_URL=postgresql://scraper:scraper@postgres:5432/scraper
+      - APP_REDIS_URL=redis://redis:6379/0
+      - ENV_FOR_DYNACONF=development
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python -m core.api
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+  stt:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    env_file:
+      - .secrets.toml
+    environment:
+      - APP_DATABASE_URL=postgresql://scraper:scraper@postgres:5432/scraper
+      - APP_REDIS_URL=redis://redis:6379/0
+      - ENV_FOR_DYNACONF=development
+    ports:
+      - "5001:5001"
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python -m stt.server
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+
+volumes:
+  redis_data:
+  postgres_data:
