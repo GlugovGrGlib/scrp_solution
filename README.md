@@ -1,5 +1,9 @@
 # Media Scraper Solution
 
+[![Lint](https://github.com/GlugovGrGlib/scrp_solution/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=lint)](https://github.com/GlugovGrGlib/scrp_solution/actions/workflows/ci.yml)
+[![Type Check](https://github.com/GlugovGrGlib/scrp_solution/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=typecheck)](https://github.com/GlugovGrGlib/scrp_solution/actions/workflows/ci.yml)
+[![Tests](https://github.com/GlugovGrGlib/scrp_solution/actions/workflows/ci.yml/badge.svg?branch=main&event=push&job=test)](https://github.com/GlugovGrGlib/scrp_solution/actions/workflows/ci.yml)
+
 Social media content analysis system.
 
 ## Architecture
