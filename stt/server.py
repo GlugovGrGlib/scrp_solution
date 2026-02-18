@@ -2,21 +2,17 @@
 
 import json
 import logging
-from typing import Any
 
 from flask import Flask, Response, request
 
 from core.db import init_db
+from core.utils import json_response
 from stt.handler import handler
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-
-
-def json_response(data: dict[str, Any], status: int = 200) -> Response:
-    return Response(json.dumps(data), status=status, mimetype="application/json")
 
 
 @app.before_request

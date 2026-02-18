@@ -2,6 +2,7 @@
 
 import json
 import logging
+import uuid
 from enum import StrEnum
 from typing import Any
 
@@ -79,8 +80,6 @@ def _invoke_direct(event: dict[str, Any]) -> dict[str, Any]:
 
 def _invoke_step_functions(event: dict[str, Any]) -> dict[str, Any]:
     """Invoke STT via AWS Step Functions."""
-    import uuid
-
     import boto3
 
     state_machine_arn = getattr(settings, "stt_state_machine_arn", "")

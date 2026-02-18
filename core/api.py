@@ -1,11 +1,10 @@
 """Flask API for local development and testing."""
 
-import json
 import logging
-from typing import Any
 
 from flask import Flask, Response, request
 
+from core.cache import create_cache
 from core.db import (
     create_campaign,
     create_item,
@@ -13,28 +12,13 @@ from core.db import (
     get_campaign_items,
     init_db,
 )
+from core.invoker import invoke_stt
+from core.utils import json_response, to_dict
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-
-
-def json_response(data: dict[str, Any], status: int = 200) -> Response:
-    return Response(json.dumps(data), status=status, mimetype="application/json")
-
-
-def to_dict(obj: Any) -> dict[str, Any]:
-    """Serializes object into dictionary."""
-    from datetime import datetime
-
-    result: dict[str, Any] = {}
-    for c in obj.__table__.columns:
-        value = getattr(obj, c.name)
-        if isinstance(value, datetime):
-            value = value.isoformat()
-        result[c.name] = value
-    return result
 
 
 @app.before_request
@@ -72,8 +56,6 @@ def create_campaign_endpoint() -> Response:
 
     # Invoke STT processing for items with audio URLs
     if items_with_audio:
-        from core.invoker import invoke_stt
-
         for item in items_with_audio:
             logger.info("Invoking STT for item %s", item.id)
             invoke_stt(campaign.id, item.id)
@@ -93,8 +75,6 @@ def get_campaign_endpoint(campaign_id: str) -> Response:
     campaign = get_campaign(campaign_id)
     if not campaign:
         return json_response({"error": "Campaign not found"}, 404)
-
-    from core.cache import create_cache
 
     cache = create_cache()
     items = get_campaign_items(campaign_id)

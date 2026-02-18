@@ -1,11 +1,11 @@
 """AWS Lambda handler for STT service."""
 
-import json
 import logging
 from typing import Any
 
 from core.cache import create_cache
 from core.db import create_failure, get_item, update_item_status
+from core.utils import lambda_response
 from stt.service import TranscriptionError, TranscriptionService
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ _service: TranscriptionService | None = None
 
 
 def get_service() -> TranscriptionService:
-    """Get or create service instance (singleton for Lambda warmth)."""
+    """Get or create service instance."""
     global _service
     if _service is None:
         _service = TranscriptionService()
@@ -26,7 +26,7 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
     """
     Lambda handler for audio transcription.
 
-    Expected event format (from Step Functions):
+    Expected event format (e.g., from Step Functions):
     {
         "campaign_id": "uuid",
         "item_id": "uuid"
@@ -66,18 +66,15 @@ def handler(event: dict[str, Any], _context: Any) -> dict[str, Any]:
         update_item_status(item_id, "completed")
         logger.info("Transcription completed for item %s", item_id)
 
-        return {
-            "statusCode": 200,
-            "body": json.dumps(
-                {
-                    "item_id": item_id,
-                    "campaign_id": campaign_id,
-                    "status": "completed",
-                    "duration_ms": result.duration_ms,
-                    "confidence": result.confidence,
-                }
-            ),
-        }
+        return lambda_response(
+            {
+                "item_id": item_id,
+                "campaign_id": campaign_id,
+                "status": "completed",
+                "duration_ms": result.duration_ms,
+                "confidence": result.confidence,
+            }
+        )
 
     except TranscriptionError as e:
         logger.error("Transcription failed for item %s: %s", item_id, e)
@@ -105,7 +102,7 @@ def _error_response(
         body["item_id"] = item_id
     if campaign_id:
         body["campaign_id"] = campaign_id
-    return {"statusCode": status, "body": json.dumps(body)}
+    return lambda_response(body, status)
 
 
 def _log_failure(item_id: str, campaign_id: str, error: str, message: str) -> None:
